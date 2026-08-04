@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { PriceChart } from "@/components/PriceChart";
 import { getStock } from "@/lib/api";
 
@@ -28,12 +27,7 @@ export default async function StockPage({ params }: Props) {
   const { ticker } = await params;
   const symbol = ticker.toUpperCase();
 
-  let stock;
-  try {
-    stock = await getStock(symbol);
-  } catch {
-    notFound();
-  }
+const stock = await getStock(symbol);
 
   const positive = (stock.quote.change_percent ?? 0) >= 0;
 
