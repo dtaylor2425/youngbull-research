@@ -1,120 +1,89 @@
 import Link from "next/link";
+import { SiteHeader } from "@/components/SiteHeader";
 import { StockSearch } from "@/components/StockSearch";
-
-const featured = [
-  {
-    ticker: "NVDA",
-    title: "The compute engine",
-    note: "Accelerated computing, networking and the center of AI capital spending.",
-  },
-  {
-    ticker: "VRT",
-    title: "The physical bottleneck",
-    note: "Power and cooling infrastructure required to turn chips into usable compute.",
-  },
-  {
-    ticker: "ALAB",
-    title: "The connectivity layer",
-    note: "Data-center connectivity and memory architecture as systems scale.",
-  },
-];
+import { portfolioTickers, pseudoScore, researchPosts, universe } from "@/lib/researchData";
 
 export default function Home() {
+  const portfolio = portfolioTickers.map((ticker) => {
+    const stock = universe.find((item) => item.ticker === ticker);
+    return stock || { ticker, company: ticker, theme: "Young Bull Portfolio", thematicFit: 82, conviction: "Watch" as const, note: "Portfolio holding." };
+  });
+
+  const topIdeas = universe
+    .map((stock) => ({ ...stock, ...pseudoScore(stock.ticker, stock.thematicFit) }))
+    .sort((a, b) => b.overall - a.overall)
+    .slice(0, 6);
+
   return (
     <main>
-      <header className="site-header container">
-        <Link href="/" className="brand">
-          <span className="brand-mark">Y</span>
-          <span>YOUNG BULL</span>
-        </Link>
-        <nav>
-          <Link href="#research">Research</Link>
-          <Link href="#watchlist">Watchlist</Link>
-          <Link href="#about">About</Link>
-        </nav>
-      </header>
+      <SiteHeader />
 
-      <section className="hero container">
-        <div className="eyebrow">THE PHYSICAL LAYER OF AI</div>
-        <h1>
-          Research the companies
-          <span> building the future.</span>
-        </h1>
-        <p>
-          Stock research centered on AI infrastructure, supply-chain bottlenecks
-          and the businesses converting capital spending into earnings.
-        </p>
+      <section className="hero container compact-hero">
+        <div className="eyebrow">YOUNG BULL RESEARCH TERMINAL</div>
+        <h1>Own the companies <span>behind the trade.</span></h1>
+        <p>Stock research for the physical layer of AI, built around a real portfolio, transparent theses and company-level workbooks.</p>
         <StockSearch />
       </section>
 
       <section className="market-strip">
         <div className="container strip-grid">
-          <div>
-            <span>FOCUS</span>
-            <strong>AI Infrastructure</strong>
-          </div>
-          <div>
-            <span>STYLE</span>
-            <strong>Bottom-up Research</strong>
-          </div>
-          <div>
-            <span>DATA</span>
-            <strong>Yahoo Finance MVP</strong>
-          </div>
-          <div>
-            <span>STATUS</span>
-            <strong className="live">Live Prototype</strong>
-          </div>
+          <div><span>PORTFOLIO</span><strong>{portfolio.length} Holdings</strong></div>
+          <div><span>UNIVERSE</span><strong>{universe.length}+ Stocks</strong></div>
+          <div><span>PRIMARY THEME</span><strong>AI Infrastructure</strong></div>
+          <div><span>RESEARCH</span><strong className="live">Actively Updated</strong></div>
         </div>
       </section>
 
-      <section id="research" className="section container">
+      <section className="section container">
         <div className="section-heading">
-          <div>
-            <div className="eyebrow">RESEARCH TERMINAL</div>
-            <h2>Start with the stocks that matter.</h2>
-          </div>
-          <span className="section-index">01</span>
+          <div><div className="eyebrow">REAL POSITIONS</div><h2>Young Bull Portfolio</h2></div>
+          <Link href="/portfolio" className="text-link">VIEW FULL PORTFOLIO →</Link>
         </div>
-
-        <div className="research-grid">
-          {featured.map((stock) => (
-            <Link
-              href={`/stocks/${stock.ticker}`}
-              className="research-card"
-              key={stock.ticker}
-            >
-              <div className="card-top">
-                <span className="ticker">{stock.ticker}</span>
-                <span className="arrow">↗</span>
-              </div>
-              <h3>{stock.title}</h3>
-              <p>{stock.note}</p>
-              <div className="card-footer">OPEN WORKBOOK</div>
-            </Link>
+        <div className="portfolio-grid">
+          {portfolio.map((stock) => (
+            <article className="holding-card" key={stock.ticker}>
+              <div><strong>{stock.ticker}</strong><span>{stock.theme}</span></div>
+              <p>{stock.company}</p>
+              <Link href={`/stocks/${stock.ticker}`}>OPEN WORKBOOK →</Link>
+            </article>
           ))}
         </div>
       </section>
 
-      <section id="watchlist" className="thesis-section">
-        <div className="container thesis-grid">
-          <div>
-            <div className="eyebrow">THE CORE IDEA</div>
-            <h2>Do not stop at the headline stock.</h2>
+      <section className="section dark-section">
+        <div className="container">
+          <div className="section-heading">
+            <div><div className="eyebrow">MODEL OUTPUT</div><h2>Highest Scored Stocks</h2></div>
+            <Link href="/stocks" className="text-link">EXPLORE UNIVERSE →</Link>
           </div>
-          <p>
-            The largest opportunities often sit one layer below the obvious
-            trade: power, cooling, memory, networking, materials and specialized
-            equipment. This platform is being built to map those dependencies
-            and turn them into investable research.
-          </p>
+          <div className="top-ideas-grid">
+            {topIdeas.map((stock, index) => (
+              <Link href={`/stocks/${stock.ticker}`} className="idea-row" key={stock.ticker}>
+                <span className="rank">0{index + 1}</span>
+                <div><strong>{stock.ticker}</strong><small>{stock.theme}</small></div>
+                <p>{stock.note}</p>
+                <b>{stock.overall}</b>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      <footer id="about" className="container footer">
-        <span>YOUNG BULL RESEARCH</span>
-        <span>REAL MONEY · REAL POSITIONS · REAL RECEIPTS</span>
-      </footer>
+      <section className="section container">
+        <div className="section-heading">
+          <div><div className="eyebrow">LATEST WORK</div><h2>Research Library</h2></div>
+          <Link href="/research" className="text-link">VIEW ALL RESEARCH →</Link>
+        </div>
+        <div className="research-list">
+          {researchPosts.slice(0, 4).map((post) => (
+            <article key={post.title}>
+              <span>{post.date}</span>
+              <div><small>{post.theme} · {post.access}</small><h3>{post.title}</h3></div>
+              <div>{post.tickers.map((ticker) => <Link key={ticker} href={`/stocks/${ticker}`}>{ticker}</Link>)}</div>
+            </article>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
