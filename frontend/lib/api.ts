@@ -1,12 +1,17 @@
 import type { StockResponse } from "./types";
 
-const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-).replace(/\/$/, "");
+const API_URL = process.env.API_URL;
 
 export async function getStock(ticker: string): Promise<StockResponse> {
+  if (!API_URL) {
+    throw new Error(
+      "API_URL is missing. Add the Railway backend URL to the Vercel environment variables."
+    );
+  }
+
   const symbol = ticker.trim().toUpperCase();
-  const url = `${API_URL}/api/stocks/${encodeURIComponent(symbol)}`;
+  const baseUrl = API_URL.replace(/\/$/, "");
+  const url = `${baseUrl}/api/stocks/${encodeURIComponent(symbol)}`;
 
   console.log(`[Young Bull API] Requesting: ${url}`);
 
@@ -20,23 +25,10 @@ export async function getStock(ticker: string): Promise<StockResponse> {
   if (!response.ok) {
     const responseBody = await response.text();
 
-    console.error("[Young Bull API] Request failed", {
-      url,
-      status: response.status,
-      body: responseBody,
-    });
-
     throw new Error(
-      `API request failed with status ${response.status}: ${responseBody}`
+      `Stock API failed with ${response.status}: ${responseBody}`
     );
   }
 
-  const data = (await response.json()) as StockResponse;
-
-  if (!data.ticker || !data.quote || !data.company) {
-    console.error("[Young Bull API] Unexpected response:", data);
-    throw new Error("The stock API returned an unexpected response.");
-  }
-
-  return data;
+  return response.json();
 }
