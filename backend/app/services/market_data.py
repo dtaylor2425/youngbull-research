@@ -32,66 +32,90 @@ def _cached_stock(ticker: str, cache_bucket: int) -> StockResponse:
     del cache_bucket
 
     symbol = ticker.upper().strip()
+
     if not symbol or len(symbol) > 12:
         raise MarketDataError("Invalid ticker")
 
-    stock = yf.Ticker(symbol)
-
     try:
-        history = stock.history(period="1y", interval="1d", auto_adjust=True)
-        if history.empty:
-            raise MarketDataError(f"No market data found for {symbol}")
+        stock = yf.Ticker(symbol)
 
-        info = stock.get_info()
-        fast = stock.fast_info
+        history = stock.history(
+            period="1y",
+            interval="1d",
+            auto_adjust=True,
+            timeout=20,
+        )
 
-        close = _clean_number(history["Close"].iloc[-1])
+        if history.empty or "Close" not in history.columns:
+            raise MarketDataError(f"No price history found for {symbol}")
+
+        try:
+            info = stock.info or {}
+        except Exception:
+            info = {}
+
+        closes = history["Close"].dropna()
+
+        if closes.empty:
+            raise MarketDataError(f"No closing prices found for {symbol}")
+
+        price = _clean_number(closes.iloc[-1])
         previous_close = (
-            _clean_number(history["Close"].iloc[-2])
-            if len(history.index) > 1
-            else _clean_number(fast.get("previous_close"))
-        )
-
-        change = (
-            close - previous_close
-            if close is not None and previous_close is not None
-            else None
-        )
-        change_percent = (
-            (change / previous_close) * 100
-            if change is not None and previous_close
+            _clean_number(closes.iloc[-2])
+            if len(closes) > 1
             else None
         )
 
-        points = [
+        change = None
+        change_percent = None
+
+        if price is not None and previous_close is not None:
+            change = price - previous_close
+
+            if previous_close != 0:
+                change_percent = change / previous_close * 100
+
+        history_points = [
             HistoryPoint(
                 date=index.strftime("%Y-%m-%d"),
-                close=round(float(row["Close"]), 2),
+                close=round(float(close), 2),
             )
-            for index, row in history.iterrows()
-            if _clean_number(row["Close"]) is not None
+            for index, close in closes.items()
         ]
 
         quote = Quote(
-            price=close,
+            price=price,
             previous_close=previous_close,
             change=change,
             change_percent=change_percent,
             currency=str(info.get("currency") or "USD"),
-            volume=_clean_int(info.get("volume") or fast.get("last_volume")),
-            year_high=_clean_number(info.get("fiftyTwoWeekHigh") or fast.get("year_high")),
-            year_low=_clean_number(info.get("fiftyTwoWeekLow") or fast.get("year_low")),
+            volume=_clean_int(
+                history["Volume"].dropna().iloc[-1]
+                if "Volume" in history.columns
+                and not history["Volume"].dropna().empty
+                else None
+            ),
+            year_high=_clean_number(closes.max()),
+            year_low=_clean_number(closes.min()),
         )
 
         company = Company(
-            name=str(info.get("longName") or info.get("shortName") or symbol),
+            name=str(
+                info.get("longName")
+                or info.get("shortName")
+                or symbol
+            ),
             sector=str(info.get("sector") or "N/A"),
             industry=str(info.get("industry") or "N/A"),
-            exchange=str(info.get("exchange") or "N/A"),
+            exchange=str(
+                info.get("exchange")
+                or info.get("fullExchangeName")
+                or "N/A"
+            ),
             country=str(info.get("country") or "N/A"),
             website=str(info.get("website") or ""),
             employees=_clean_int(info.get("fullTimeEmployees")),
-            market_cap=_clean_int(info.get("marketCap") or fast.get("market_cap")),
+            market_cap=_clean_int(info.get("marketCap")),
             description=str(info.get("longBusinessSummary") or ""),
         )
 
@@ -99,15 +123,18 @@ def _cached_stock(ticker: str, cache_bucket: int) -> StockResponse:
             ticker=symbol,
             quote=quote,
             company=company,
-            history=points,
+            history=history_points,
         )
+
     except MarketDataError:
         raise
     except Exception as exc:
-        raise MarketDataError(f"Unable to retrieve {symbol}") from exc
+        print(f"Yahoo Finance error for {symbol}: {repr(exc)}")
+        raise MarketDataError(
+            f"Unable to retrieve market data for {symbol}"
+        ) from exc
 
 
 def get_stock(ticker: str) -> StockResponse:
-    # Five-minute cache without adding Redis during the MVP.
     cache_bucket = int(time() // 300)
     return _cached_stock(ticker, cache_bucket)
