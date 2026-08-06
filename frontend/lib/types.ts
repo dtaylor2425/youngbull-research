@@ -24,3 +24,22 @@ export type StockResponse = {
   files: { sec_company: string; yahoo_profile: string };
   history: HistoryPoint[];
 };
+
+export type StoredScore = {
+  ticker: string; as_of: string; momentum: number; technicals: number;
+  fundamentals: number; thematic_fit: number; overall: number;
+  raw_metrics: Record<string, number | null>;
+};
+
+export type PremiumWorkbook = {
+  ticker: string;
+  datasets: {
+    overview: Record<string, string>;
+    income: { quarterlyReports?: Record<string, string>[]; annualReports?: Record<string, string>[] };
+    balance: { quarterlyReports?: Record<string, string>[]; annualReports?: Record<string, string>[] };
+    cashflow: { quarterlyReports?: Record<string, string>[]; annualReports?: Record<string, string>[] };
+    earnings: { quarterlyEarnings?: Record<string, string>[]; annualEarnings?: Record<string, string>[] };
+    estimates: Record<string, unknown>;
+  };
+  errors: Record<string, string>;
+};

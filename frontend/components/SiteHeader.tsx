@@ -11,7 +11,6 @@ export function SiteHeader() {
         <Link href="/stocks">Stocks</Link>
         <Link href="/portfolio">Portfolio</Link>
         <Link href="/themes">Themes</Link>
-        <Link href="/ai-news">AI News</Link>
         <Link href="/research">Research</Link>
         <Link href="/about">About</Link>
       </nav>

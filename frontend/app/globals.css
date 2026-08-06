@@ -641,3 +641,79 @@ nav a:hover {
   .file-grid{grid-template-columns:1fr}
   .quote-score{align-items:flex-start; flex-direction:column}
 }
+
+
+/* Terminal v2 */
+.score-method-banner {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--line-gold);
+  background: rgba(216,166,63,.05);
+}
+.score-method-banner span, .score-method-banner small {
+  color: var(--muted);
+  font: 9px "Courier New", monospace;
+  letter-spacing: .12em;
+}
+.score-method-banner strong { font: 700 12px "Courier New", monospace; }
+.premium-main-panel { padding-bottom: 18px; }
+.premium-chart-shell, .financial-chart-shell {
+  margin-top: 26px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.chart-controls { display:flex; justify-content:space-between; gap:14px; margin-bottom:14px; }
+.chart-controls > div { display:flex; flex-wrap:wrap; gap:6px; }
+.chart-controls button {
+  border:1px solid var(--line);
+  background:#171716;
+  color:var(--muted);
+  padding:8px 10px;
+  font:700 9px "Courier New",monospace;
+  cursor:pointer;
+}
+.chart-controls button.active, .chart-controls button:hover {
+  color:#111;
+  background:var(--gold);
+  border-color:var(--gold);
+}
+.premium-chart { height:470px; }
+.financial-chart { height:390px; }
+.empty-data {
+  margin-top:30px;
+  padding:35px;
+  border:1px dashed var(--line);
+  color:var(--muted);
+}
+.earnings-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:35px;
+}
+.earnings-grid article {
+  min-height:145px;
+  display:flex;
+  flex-direction:column;
+  padding:18px;
+  border:1px solid var(--line);
+  background:var(--surface);
+}
+.earnings-grid span, .earnings-grid small {
+  color:var(--muted);
+  font:9px "Courier New",monospace;
+}
+.earnings-grid strong { margin:18px 0 6px; font:700 18px "Courier New",monospace; }
+.earnings-grid b { margin-top:auto; font-size:11px; }
+@media(max-width:850px){
+  .score-method-banner{grid-template-columns:1fr}
+  .earnings-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:520px){
+  .premium-chart{height:350px}
+  .earnings-grid{grid-template-columns:1fr}
+}
