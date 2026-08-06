@@ -8,8 +8,8 @@ export type UniverseStock = {
 };
 
 export const portfolioTickers = [
-  "NBIS", "MU", "CRDO", "PENG", "OUST", "ANET", "SILC", "WYY", "ARM",
-  "OSS", "ASTS", "ALAB", "XNDU", "FN", "SITM", "ALMU", "WOLF", "LPKFF", "RKLB"
+  "NBIS", "OUST", "CRDO", "MU", "PENG", "ALAB", "ANET", "SILC", "OSS",
+  "ASTS", "ARM", "WYY", "FN", "ALMU", "SITM", "XNDU", "WOLF", "LPKFF", "RKLB"
 ];
 
 export const universe: UniverseStock[] = [
@@ -76,19 +76,77 @@ export const themes = [
 ];
 
 export const researchPosts = [
-  { title: "Do Not Buy the Robot. Buy the Export License.", date: "Jul 25", tickers: ["MP", "NVDA"], theme: "Critical Minerals", access: "Premium" },
-  { title: "I Passed on This Stock at $188. Today I Paid $327.", date: "Jul 24", tickers: ["ALAB"], theme: "Connectivity", access: "Premium" },
-  { title: "AI Ran Out of Transformers. One Company Makes the Steel.", date: "Jul 15", tickers: ["ETN", "GEV"], theme: "Power", access: "Free" },
-  { title: "AI Just Hit a Wall. Buy the Wall.", date: "Jul 13", tickers: ["VRT", "PWR"], theme: "Power & Cooling", access: "Free" },
-  { title: "Everyone Bought the Cooler. I Bought the Coolant.", date: "Jul 16", tickers: ["VRT"], theme: "Cooling", access: "Premium" },
-  { title: "SK Hynix Is the Anti-SpaceX IPO", date: "Jul 10", tickers: ["MU"], theme: "Memory", access: "Premium" }
+  {
+    title: "Everyone Bought the Cooler. I Bought the Coolant.",
+    date: "Jul 16",
+    tickers: ["VRT"],
+    theme: "Cooling",
+    access: "Premium",
+    url: "https://youngbullinvests.substack.com/p/everyone-bought-the-cooler-i-bought"
+  },
+  {
+    title: "AI Ran Out of Transformers. One Company Makes the Steel.",
+    date: "Jul 15",
+    tickers: ["ETN", "GEV"],
+    theme: "Power",
+    access: "Premium",
+    url: "https://youngbullinvests.substack.com/p/ai-ran-out-of-transformers-one-company"
+  },
+  {
+    title: "The Whole Book Is Red. I'm Not Touching a Single Sell Button.",
+    date: "Jul 15",
+    tickers: ["OUST", "ARM", "RKLB", "ASTS", "CRDO", "SILC", "NBIS"],
+    theme: "Portfolio",
+    access: "Free",
+    url: "https://youngbullinvests.substack.com/p/the-whole-book-is-red-im-not-touching"
+  },
+  {
+    title: "Own What AI Needs, Not What It's Eating.",
+    date: "Jul 16",
+    tickers: ["NVDA", "VRT", "ETN"],
+    theme: "AI Infrastructure",
+    access: "Free",
+    url: "https://youngbullinvests.substack.com/p/own-what-ai-needs-not-what-its-eating"
+  },
+  {
+    title: "Don't Buy the Robot. Buy the Bottleneck.",
+    date: "Jun 9",
+    tickers: ["OUST", "AMBA", "SITM"],
+    theme: "Physical AI",
+    access: "Free",
+    url: "https://youngbullinvests.substack.com/p/dont-buy-the-robot-buy-the-bottleneck"
+  },
+  {
+    title: "NBIS · Part 2 · 684%",
+    date: "May 13",
+    tickers: ["NBIS"],
+    theme: "AI Cloud",
+    access: "Premium",
+    url: "https://youngbullinvests.substack.com/p/nbis-part-2-684"
+  },
+  {
+    title: "The Research Desk I Built for My Own Book",
+    date: "Apr 20",
+    tickers: [],
+    theme: "Platform",
+    access: "Free",
+    url: "https://youngbullinvests.substack.com/p/the-research-desk-i-built-for-my"
+  }
 ];
 
 export function pseudoScore(ticker: string, thematicFit: number) {
-  const seed = ticker.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const seed = ticker
+    .split("")
+    .reduce((sum, character) => sum + character.charCodeAt(0), 0);
   const momentum = 55 + (seed * 7) % 43;
   const technicals = 52 + (seed * 11) % 46;
   const fundamentals = 50 + (seed * 13) % 47;
-  const overall = Math.round(momentum * 0.25 + technicals * 0.25 + fundamentals * 0.30 + thematicFit * 0.20);
+  const overall = Math.round(
+    momentum * 0.25 +
+      technicals * 0.25 +
+      fundamentals * 0.30 +
+      thematicFit * 0.20
+  );
+
   return { momentum, technicals, fundamentals, thematicFit, overall };
 }
