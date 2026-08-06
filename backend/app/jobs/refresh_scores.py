@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from sqlalchemy import delete
 
@@ -12,15 +14,47 @@ from app.universe import UNIVERSE
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("youngbull.refresh")
 
+MAX_WORKERS = max(1, min(int(os.getenv("SCORE_MAX_WORKERS", "8")), 12))
+MIN_COVERAGE = float(os.getenv("SCORE_MIN_COVERAGE", "0.65"))
+
+def collect_one(ticker: str):
+    try:
+        item = collect_raw(ticker)
+        logger.info("Collected %s", ticker)
+        return item
+    except Exception:
+        logger.exception("Failed %s", ticker)
+        return None
+
 def main() -> None:
     init_db()
+    logger.info(
+        "Starting score refresh for %s tickers with %s workers",
+        len(UNIVERSE),
+        MAX_WORKERS,
+    )
+
     raw = []
-    for ticker in UNIVERSE:
-        try:
-            logger.info("Collecting %s", ticker)
-            raw.append(collect_raw(ticker))
-        except Exception:
-            logger.exception("Failed %s", ticker)
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {executor.submit(collect_one, ticker): ticker for ticker in UNIVERSE}
+        for future in as_completed(futures):
+            result = future.result()
+            if result is not None:
+                raw.append(result)
+
+    coverage = len(raw) / len(UNIVERSE)
+    logger.info(
+        "Collected %s of %s tickers (%.1f%% coverage)",
+        len(raw),
+        len(UNIVERSE),
+        coverage * 100,
+    )
+
+    if coverage < MIN_COVERAGE:
+        raise RuntimeError(
+            f"Coverage {coverage:.1%} is below required minimum {MIN_COVERAGE:.1%}. "
+            "Existing scores were not replaced."
+        )
 
     scored = score_universe(raw)
     if not scored:

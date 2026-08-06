@@ -86,6 +86,8 @@ def ticker_score(ticker: str) -> dict:
             raise HTTPException(status_code=404, detail="No stored score. Run refresh_scores first.")
         return {
             "ticker": row.ticker,
+            "company": row.company,
+            "theme": row.theme,
             "as_of": row.as_of.isoformat(),
             "momentum": row.momentum_score,
             "technicals": row.technical_score,
