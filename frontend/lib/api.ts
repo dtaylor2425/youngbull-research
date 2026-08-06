@@ -1,4 +1,4 @@
-import type { PremiumWorkbook, StockResponse, StoredScore } from "./types";
+import type { ComparisonResponse, PortfolioSnapshot, PremiumWorkbook, StockResponse, StoredScore } from "./types";
 
 const API_URL = (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
@@ -34,3 +34,6 @@ export async function getPremiumWorkbook(ticker: string): Promise<PremiumWorkboo
 export async function getUniverseScores() {
   return request<{ as_of: string | null; stocks: any[] }>("/api/universe?limit=150");
 }
+
+export function getPortfolio(){return request<PortfolioSnapshot>("/api/portfolio");}
+export function getComparison(ticker:string){return request<ComparisonResponse>(`/api/stocks/${encodeURIComponent(ticker.toUpperCase())}/comparison`);}

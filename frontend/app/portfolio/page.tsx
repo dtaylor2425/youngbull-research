@@ -1,48 +1,89 @@
-import Link from "next/link";
-import { SiteHeader } from "@/components/SiteHeader";
-import { portfolioTickers, pseudoScore, universe } from "@/lib/researchData";
+import "./performance-portfolio.css";
 
-export default function PortfolioPage() {
-  const holdings = portfolioTickers.map((ticker, index) => {
-    const stock = universe.find((x) => x.ticker === ticker);
-    const base = stock || { ticker, company: ticker, theme: "Portfolio", thematicFit: 82, conviction: "Watch" as const, note: "Young Bull portfolio holding." };
-    return { ...base, ...pseudoScore(ticker, base.thematicFit), status: index < 6 ? "Core" : index < 13 ? "Active" : "Watch" };
-  });
+import { PerformancePortfolioTable } from "@/components/PerformancePortfolioTable";
+import { SiteHeader } from "@/components/SiteHeader";
+import { getPortfolio } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
+
+export default async function PortfolioPage() {
+  const portfolio = await getPortfolio();
+
+  const winners = portfolio.holdings.filter((holding) => holding.total_gain_pct >= 0);
+  const losers = portfolio.holdings.filter((holding) => holding.total_gain_pct < 0);
+  const best = [...portfolio.holdings].sort(
+    (a, b) => b.total_gain_pct - a.total_gain_pct
+  )[0];
+  const worst = [...portfolio.holdings].sort(
+    (a, b) => a.total_gain_pct - b.total_gain_pct
+  )[0];
 
   return (
     <main>
       <SiteHeader />
-      <section className="page-hero container">
-        <div className="eyebrow">REAL MONEY · REAL POSITIONS</div>
-        <h1>Portfolio</h1>
-        <p>A transparent view of the companies Young Bull owns and the research attached to each position.</p>
+
+      <section className="page-hero container performance-portfolio-hero">
+        <div className="eyebrow">REAL POSITIONS · PERFORMANCE ONLY</div>
+        <h1>Young Bull Portfolio</h1>
+        <p>
+          A transparent view of portfolio performance without exposing account
+          value, position cost or dollar gains.
+        </p>
       </section>
-      <section className="container portfolio-summary">
-        <div><span>HOLDINGS</span><strong>{holdings.length}</strong></div>
-        <div><span>CORE POSITIONS</span><strong>{holdings.filter(x => x.status === "Core").length}</strong></div>
-        <div><span>AVERAGE SCORE</span><strong>{Math.round(holdings.reduce((s, x) => s + x.overall, 0) / holdings.length)}</strong></div>
-        <div><span>PRIMARY EXPOSURE</span><strong>AI Infrastructure</strong></div>
+
+      <section className="container performance-kpis">
+        <article>
+          <span>TOTAL RETURN</span>
+          <strong
+            className={
+              portfolio.summary.total_return_pct >= 0 ? "positive" : "negative"
+            }
+          >
+            {portfolio.summary.total_return_pct > 0 ? "+" : ""}
+            {portfolio.summary.total_return_pct.toFixed(2)}%
+          </strong>
+        </article>
+
+        <article>
+          <span>WINNING POSITIONS</span>
+          <strong>
+            {winners.length} / {portfolio.summary.holdings}
+          </strong>
+        </article>
+
+        <article>
+          <span>BEST POSITION</span>
+          <strong className="positive">{best.ticker}</strong>
+          <small>+{best.total_gain_pct.toFixed(2)}%</small>
+        </article>
+
+        <article>
+          <span>LARGEST DRAWDOWN</span>
+          <strong className="negative">{worst.ticker}</strong>
+          <small>{worst.total_gain_pct.toFixed(2)}%</small>
+        </article>
+
+        <article>
+          <span>POSITIONS</span>
+          <strong>{portfolio.summary.holdings}</strong>
+        </article>
       </section>
+
       <section className="container page-section">
-        <div className="data-table-wrap">
-          <table className="data-table">
-            <thead><tr><th>Symbol</th><th>Company</th><th>Theme</th><th>Status</th><th>Score</th><th>Thesis</th><th></th></tr></thead>
-            <tbody>
-              {holdings.map((stock) => (
-                <tr key={stock.ticker}>
-                  <td><strong className="gold">{stock.ticker}</strong></td>
-                  <td>{stock.company}</td>
-                  <td><span className="tag">{stock.theme}</span></td>
-                  <td>{stock.status}</td>
-                  <td><strong>{stock.overall}</strong></td>
-                  <td className="thesis-cell">{stock.note}</td>
-                  <td><Link className="table-link" href={`/stocks/${stock.ticker}`}>Workbook →</Link></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="portfolio-page-heading">
+          <div>
+            <div className="eyebrow">POSITION PERFORMANCE</div>
+            <h2>Current holdings</h2>
+          </div>
+          <small>Snapshot: {portfolio.as_of}</small>
         </div>
-        <p className="disclaimer">Position sizes and cost basis are intentionally omitted until the portfolio data is connected to a controlled database or brokerage export.</p>
+
+        <PerformancePortfolioTable holdings={portfolio.holdings} />
+
+        <p className="disclaimer">
+          Performance is based on the supplied brokerage snapshot and may not
+          reflect trades or price changes made after the listed date.
+        </p>
       </section>
     </main>
   );

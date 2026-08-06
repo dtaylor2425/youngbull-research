@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { FinancialChart } from "@/components/FinancialChart";
+import { RelativePerformanceChart } from "@/components/RelativePerformanceChart";
+import { BalanceSheetChart, CashFlowChart, MarginChart } from "@/components/WorkbookDepthCharts";
 import { PremiumPriceChart } from "@/components/PremiumPriceChart";
 import { ScoreBars } from "@/components/ScoreBars";
 import { ScoreRing } from "@/components/ScoreRing";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getPremiumWorkbook, getScore, getStock } from "@/lib/api";
+import { getComparison, getPremiumWorkbook, getScore, getStock } from "@/lib/api";
 import { researchPosts, universe } from "@/lib/researchData";
 
 type Props = { params: Promise<{ ticker: string }> };
@@ -25,10 +27,11 @@ export const dynamic = "force-dynamic";
 export default async function StockPage({ params }: Props) {
   const { ticker } = await params;
   const symbol = ticker.toUpperCase();
-  const [stock, score, premium] = await Promise.all([
+  const [stock, score, premium, comparison] = await Promise.all([
     getStock(symbol),
     getScore(symbol),
     getPremiumWorkbook(symbol),
+    getComparison(symbol),
   ]);
 
   const metadata = universe.find((x) => x.ticker === symbol);
@@ -37,13 +40,11 @@ export default async function StockPage({ params }: Props) {
   const positive = (stock.quote.change_percent ?? 0) >= 0;
   const relatedResearch = researchPosts.filter((post) => post.tickers.includes(symbol));
 
-  const quarterlies = (premium?.datasets.income.quarterlyReports ?? []).slice(0, 8).reverse();
-  const financialRows = quarterlies.map((row) => ({
-    period: row.fiscalDateEnding?.slice(0, 7) ?? "",
-    revenue: parseNum(row.totalRevenue),
-    netIncome: parseNum(row.netIncome),
-    operatingIncome: parseNum(row.operatingIncome),
-  }));
+  const incomeRows=(premium?.datasets.income.quarterlyReports??[]).slice(0,8).reverse();
+  const balanceRows=(premium?.datasets.balance.quarterlyReports??[]).slice(0,8).reverse();
+  const cashRows=(premium?.datasets.cashflow.quarterlyReports??[]).slice(0,8).reverse();
+  const balanceByDate=new Map(balanceRows.map(r=>[r.fiscalDateEnding,r])); const cashByDate=new Map(cashRows.map(r=>[r.fiscalDateEnding,r]));
+  const financialRows=incomeRows.map(row=>{const balance=balanceByDate.get(row.fiscalDateEnding)??{};const cashflow=cashByDate.get(row.fiscalDateEnding)??{};const ocf=parseNum(cashflow.operatingCashflow);const capex=parseNum(cashflow.capitalExpenditures);return {period:row.fiscalDateEnding?.slice(0,7)??"",revenue:parseNum(row.totalRevenue),grossProfit:parseNum(row.grossProfit),netIncome:parseNum(row.netIncome),operatingIncome:parseNum(row.operatingIncome),operatingCashFlow:ocf,capex,freeCashFlow:ocf!=null&&capex!=null?ocf-Math.abs(capex):null,cash:parseNum(balance.cashAndCashEquivalentsAtCarryingValue),debt:parseNum(balance.shortLongTermDebtTotal)??parseNum(balance.longTermDebt)}});
 
   const earnings = (premium?.datasets.earnings.quarterlyEarnings ?? []).slice(0, 8);
   const overview = premium?.datasets.overview ?? {};
@@ -77,7 +78,7 @@ export default async function StockPage({ params }: Props) {
       </section>
 
       <section className="container workbook-tabs">
-        <a href="#chart">Chart</a><a href="#score">Score</a><a href="#financials">Financials</a>
+        <a href="#chart">Chart</a><a href="#score">Score</a><a href="#relative">Relative Strength</a><a href="#financials">Financials</a><a href="#margins">Margins</a><a href="#cashflow">Cash Flow</a><a href="#balance-sheet">Balance Sheet</a>
         <a href="#earnings">Earnings</a><a href="#thesis">Thesis</a><a href="#files">Files</a>
       </section>
 
@@ -87,6 +88,8 @@ export default async function StockPage({ params }: Props) {
           <PremiumPriceChart data={stock.history} />
         </article>
       </section>
+
+      <section id="relative" className="container page-section"><article className="panel premium-main-panel"><div className="panel-heading"><div><span className="eyebrow">RELATIVE PERFORMANCE</span><h2>{symbol} versus SPY and SMH</h2></div></div><RelativePerformanceChart data={comparison} ticker={symbol}/></article></section>
 
       <section id="score" className="container two-column-section">
         <article className="panel">
@@ -121,6 +124,9 @@ export default async function StockPage({ params }: Props) {
           <div><span>FREE CASH FLOW</span><strong>{compact(stock.fundamentals.free_cash_flow)}</strong></div>
         </div>
       </section>
+
+      <section id="margins" className="container workbook-depth-grid"><article className="panel"><span className="eyebrow">MARGIN STRUCTURE</span><h2 className="panel-title">Profitability trend</h2><MarginChart data={financialRows}/></article><article id="cashflow" className="panel"><span className="eyebrow">CASH GENERATION</span><h2 className="panel-title">Cash flow trend</h2><CashFlowChart data={financialRows}/></article></section>
+      <section id="balance-sheet" className="container page-section"><article className="panel premium-main-panel"><span className="eyebrow">BALANCE SHEET</span><h2 className="panel-title">Cash versus debt</h2><BalanceSheetChart data={financialRows}/></article></section>
 
       <section id="earnings" className="container page-section">
         <div className="section-heading"><div><div className="eyebrow">EARNINGS HISTORY</div><h2>Beat, miss and estimate trend</h2></div></div>

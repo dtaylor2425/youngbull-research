@@ -43,3 +43,7 @@ export type PremiumWorkbook = {
   };
   errors: Record<string, string>;
 };
+
+export type PortfolioHolding={ticker:string;day_gain:number;day_gain_pct:number;total_gain:number;total_gain_pct:number;last_price:number;average_cost:number;weight:number;acquired:string;total_cost:number;shares:number;market_value:number};
+export type PortfolioSnapshot={as_of:string;summary:{holdings:number;total_cost:number;market_value:number;total_gain:number;total_return_pct:number;day_gain:number;invested_weight_pct:number};holdings:PortfolioHolding[]};
+export type ComparisonResponse={ticker:string;series:Record<string,{date:string;value:number}[]>};
