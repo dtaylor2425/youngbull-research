@@ -1,5 +1,5 @@
 import "./performance-portfolio.css";
-
+import "../mobile-workbook-fixes.css";
 
 import { PerformancePortfolioTable } from "@/components/PerformancePortfolioTable";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -10,8 +10,9 @@ export const dynamic = "force-dynamic";
 export default async function PortfolioPage() {
   const portfolio = await getPortfolio();
 
-  const winners = portfolio.holdings.filter((holding) => holding.total_gain_pct >= 0);
-  const losers = portfolio.holdings.filter((holding) => holding.total_gain_pct < 0);
+  const winners = portfolio.holdings.filter(
+    (holding) => holding.total_gain_pct >= 0
+  );
   const best = [...portfolio.holdings].sort(
     (a, b) => b.total_gain_pct - a.total_gain_pct
   )[0];
@@ -27,8 +28,8 @@ export default async function PortfolioPage() {
         <div className="eyebrow">REAL POSITIONS · PERFORMANCE ONLY</div>
         <h1>Young Bull Portfolio</h1>
         <p>
-          A transparent view of portfolio performance without exposing account
-          value, position cost or dollar gains.
+          A transparent view of portfolio performance without displaying
+          account value, position cost or dollar gains.
         </p>
       </section>
 
@@ -37,7 +38,9 @@ export default async function PortfolioPage() {
           <span>TOTAL RETURN</span>
           <strong
             className={
-              portfolio.summary.total_return_pct >= 0 ? "positive" : "negative"
+              portfolio.summary.total_return_pct >= 0
+                ? "positive"
+                : "negative"
             }
           >
             {portfolio.summary.total_return_pct > 0 ? "+" : ""}
