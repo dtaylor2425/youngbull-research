@@ -1,6 +1,6 @@
 import "./mobile-workbook-fixes.css";
 import "./home-header-fixes.css";
-
+import "./portfolio/performance-portfolio.css";
 import Link from "next/link";
 import { PerformancePortfolioTable } from "@/components/PerformancePortfolioTable";
 import { SiteHeader } from "@/components/SiteHeader";

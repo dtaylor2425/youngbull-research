@@ -1,12 +1,7 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { researchPosts } from "@/lib/researchData";
-import "./portfolio/performance-portfolio.css";
-import "./home-header-fixes.css";
-import "./mobile-workbook-fixes.css";
 
-
-import { PerformancePortfolioTable } from "@/components/PerformancePortfolioTable";
 export default function ResearchPage() {
   return (
     <main>
