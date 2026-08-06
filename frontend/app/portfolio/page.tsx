@@ -1,5 +1,5 @@
 import "./performance-portfolio.css";
-import "./portfolio/performance-portfolio.css";
+
 
 import { PerformancePortfolioTable } from "@/components/PerformancePortfolioTable";
 import { SiteHeader } from "@/components/SiteHeader";
