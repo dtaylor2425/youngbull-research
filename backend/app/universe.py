@@ -1,0 +1,22 @@
+THEMATIC_FIT = {
+    "NVDA": ("AI Compute", 100), "AMD": ("AI Compute", 95), "AVGO": ("Custom Silicon", 98),
+    "ARM": ("Compute Architecture", 94), "ALAB": ("Connectivity", 99), "ANET": ("Networking", 98),
+    "CRDO": ("Connectivity", 98), "MRVL": ("Custom Silicon", 95), "MU": ("Memory", 96),
+    "SNDK": ("Memory", 88), "WDC": ("Storage", 82), "FN": ("Optical Manufacturing", 94),
+    "COHR": ("Optics", 93), "LITE": ("Optics", 89), "MTSI": ("Connectivity", 91),
+    "SITM": ("Timing", 90), "SILC": ("Networking", 83), "OUST": ("Physical AI", 93),
+    "NBIS": ("AI Cloud", 97), "PENG": ("AI Systems", 92), "OSS": ("Edge AI", 88),
+    "ASTS": ("Space Connectivity", 86), "RKLB": ("Space Infrastructure", 90),
+    "VRT": ("Power & Cooling", 99), "ETN": ("Power", 96), "GEV": ("Power", 96),
+    "PWR": ("Grid Buildout", 93), "EME": ("Data Center Construction", 90),
+    "CEG": ("Nuclear Power", 94), "VST": ("Power", 91), "OKLO": ("Advanced Nuclear", 93),
+    "SMR": ("Advanced Nuclear", 88), "CCJ": ("Nuclear Fuel", 91), "BWXT": ("Nuclear Components", 89),
+    "LEU": ("Nuclear Fuel", 92), "FCX": ("Copper", 85), "SCCO": ("Copper", 84),
+    "MP": ("Rare Earths", 91), "UUUU": ("Critical Minerals", 87), "PLTR": ("AI Software", 89),
+    "KTOS": ("Autonomous Defense", 90), "AVAV": ("Drones", 91), "LHX": ("Defense Electronics", 83),
+    "TSM": ("Foundry", 98), "ASML": ("Semiconductor Equipment", 97),
+    "AMAT": ("Semiconductor Equipment", 92), "LRCX": ("Semiconductor Equipment", 93),
+    "KLAC": ("Semiconductor Equipment", 92), "TER": ("Robotics & Test", 84),
+    "SYM": ("Robotics", 89), "AMBA": ("Edge AI", 87),
+}
+UNIVERSE = list(THEMATIC_FIT.keys())
