@@ -1,3 +1,4 @@
+import "./mobile-workbook-fixes.css";
 import "./home-header-fixes.css";
 
 import Link from "next/link";
@@ -87,7 +88,7 @@ export default async function Home() {
           dollar position size is displayed.
         </p>
 
-        <PerformancePortfolioTable holdings={portfolio.holdings.slice(0, 10)} />
+        <PerformancePortfolioTable holdings={portfolio.holdings.slice(0, 10)} compact />
       </section>
 
       <section className="section dark-section">

@@ -1,0 +1,241 @@
+/* Mobile homepage portfolio and conditional-workbook patch */
+
+.performance-mobile-cards {
+  display: none;
+}
+
+.unscored-badge {
+  width: 122px;
+  padding: 14px;
+  border: 1px solid var(--line-gold);
+  background: rgba(216, 166, 63, 0.05);
+}
+
+.unscored-badge strong {
+  display: block;
+  color: var(--gold);
+  font: 700 11px "Courier New", monospace;
+  letter-spacing: 0.08em;
+}
+
+.unscored-badge span {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.related-post {
+  display: block;
+}
+
+@media (max-width: 720px) {
+  .terminal-home-hero {
+    padding-top: 54px;
+    padding-bottom: 48px;
+  }
+
+  .terminal-home-hero h1 {
+    font-size: clamp(42px, 13vw, 66px);
+    line-height: 0.98;
+  }
+
+  .terminal-home-hero p {
+    font-size: 17px;
+  }
+
+  .section {
+    padding-top: 68px;
+    padding-bottom: 68px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .section-heading h2 {
+    font-size: 33px;
+    line-height: 1.05;
+  }
+
+  .performance-sort {
+    justify-content: flex-start;
+  }
+
+  .portfolio-performance.compact .performance-sort,
+  .portfolio-performance.compact .performance-table-wrap {
+    display: none;
+  }
+
+  .portfolio-performance.compact .performance-mobile-cards {
+    display: grid;
+    gap: 10px;
+  }
+
+  .performance-mobile-card {
+    display: block;
+    padding: 17px;
+    border: 1px solid var(--line);
+    background: rgba(20, 20, 19, 0.96);
+  }
+
+  .performance-mobile-card:hover {
+    border-color: var(--gold);
+  }
+
+  .performance-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .performance-card-top strong {
+    display: block;
+    color: var(--gold);
+    font: 700 20px "Courier New", monospace;
+  }
+
+  .performance-card-top small {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 10px;
+  }
+
+  .performance-card-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .performance-card-metrics > div {
+    min-width: 0;
+    padding-right: 7px;
+    border-right: 1px solid var(--line);
+  }
+
+  .performance-card-metrics > div:last-child {
+    border-right: 0;
+  }
+
+  .performance-card-metrics span {
+    display: block;
+    color: var(--muted);
+    font: 8px "Courier New", monospace;
+    letter-spacing: 0.08em;
+  }
+
+  .performance-card-metrics b {
+    display: block;
+    margin-top: 7px;
+    font: 700 12px "Courier New", monospace;
+    overflow-wrap: anywhere;
+  }
+
+  .performance-card-link {
+    margin-top: 17px;
+    padding-top: 13px;
+    border-top: 1px solid var(--line);
+    color: var(--gold);
+    font: 700 9px "Courier New", monospace;
+    letter-spacing: 0.09em;
+  }
+
+  .workbook-tabs {
+    gap: 18px;
+    padding-inline: 16px;
+    margin-inline: -16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .workbook-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stock-hero {
+    gap: 28px;
+  }
+
+  .quote-score {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .metric-grid.six {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric-card {
+    min-width: 0;
+  }
+
+  .metric-card strong {
+    overflow-wrap: anywhere;
+  }
+
+  .panel {
+    padding: 28px 20px;
+  }
+
+  .panel-title,
+  .panel-heading h2 {
+    font-size: 29px;
+    line-height: 1.08;
+  }
+
+  .premium-chart,
+  .relative-chart {
+    height: 330px;
+  }
+
+  .financial-chart,
+  .depth-chart {
+    height: 300px;
+  }
+
+  .fundamental-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .earnings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 430px) {
+  .performance-card-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .performance-card-metrics > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .performance-card-metrics > div:last-child {
+    grid-column: 1 / -1;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .metric-grid.six,
+  .fundamental-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .score-ring {
+    width: 82px;
+    height: 82px;
+  }
+
+  .score-ring > div {
+    width: 64px;
+    height: 64px;
+  }
+}

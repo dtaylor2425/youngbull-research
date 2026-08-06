@@ -26,7 +26,7 @@ export type StockResponse = {
 };
 
 export type StoredScore = {
-  ticker: string; as_of: string; momentum: number; technicals: number;
+  ticker: string; company?: string; theme?: string; as_of: string; momentum: number; technicals: number;
   fundamentals: number; thematic_fit: number; overall: number;
   raw_metrics: Record<string, number | null>;
 };
