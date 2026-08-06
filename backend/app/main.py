@@ -6,14 +6,14 @@ from datetime import date
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import desc, func, select
-from sqlalchemy import text
-from app.db import engine
 
 from app.db import init_db, session_scope
 from app.models import StockResponse
 from app.services.alpha_vantage import AlphaVantageError, build_premium_workbook
 from app.services.market_data import MarketDataError, get_stock
 from app.tables import StockScore
+from app.portfolio_data import PORTFOLIO_AS_OF, PORTFOLIO_HOLDINGS
+import yfinance as yf
 
 app = FastAPI(title="Young Bull Market API", version="2.0.0")
 
@@ -29,28 +29,7 @@ app.add_middleware(
 @app.on_event("startup")
 def startup() -> None:
     init_db()
-@app.get("/db-check")
-def db_check() -> dict:
-    with engine.connect() as connection:
-        database_name = connection.execute(
-            text("SELECT current_database()")
-        ).scalar()
 
-        database_user = connection.execute(
-            text("SELECT current_user")
-        ).scalar()
-
-        database_version = connection.execute(
-            text("SELECT version()")
-        ).scalar()
-
-    return {
-        "dialect": engine.dialect.name,
-        "driver": engine.dialect.driver,
-        "database": database_name,
-        "user": database_user,
-        "version": database_version,
-    }
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "version": "2.0.0"}
@@ -122,3 +101,23 @@ def premium_workbook(ticker: str, refresh: bool = False) -> dict:
         return build_premium_workbook(ticker, refresh=refresh)
     except AlphaVantageError as exc:
         raise HTTPException(status_code=429, detail=str(exc)) from exc
+
+
+@app.get("/api/portfolio")
+def portfolio_snapshot() -> dict:
+    total_cost=sum(x["total_cost"] for x in PORTFOLIO_HOLDINGS)
+    total_gain=sum(x["total_gain"] for x in PORTFOLIO_HOLDINGS)
+    return {"as_of":PORTFOLIO_AS_OF,"summary":{"holdings":len(PORTFOLIO_HOLDINGS),"total_cost":round(total_cost,2),"market_value":round(total_cost+total_gain,2),"total_gain":round(total_gain,2),"total_return_pct":round(total_gain/total_cost*100,2),"day_gain":round(sum(x["day_gain"] for x in PORTFOLIO_HOLDINGS),2),"invested_weight_pct":round(sum(x["weight"] for x in PORTFOLIO_HOLDINGS),2)},"holdings":PORTFOLIO_HOLDINGS}
+
+@app.get("/api/stocks/{ticker}/comparison")
+def stock_comparison(ticker:str,period:str="2y") -> dict:
+    symbols=[ticker.upper(),"SPY","SMH"]
+    frame=yf.download(symbols,period=period,interval="1d",auto_adjust=True,progress=False,group_by="ticker")
+    output={}
+    for symbol in symbols:
+        try: series=frame[symbol]["Close"].dropna()
+        except Exception: series=frame["Close"][symbol].dropna()
+        if series.empty: output[symbol]=[]; continue
+        base_value=float(series.iloc[0])
+        output[symbol]=[{"date":i.strftime("%Y-%m-%d"),"value":round(float(v/base_value*100),2)} for i,v in series.items()]
+    return {"ticker":ticker.upper(),"series":output}
