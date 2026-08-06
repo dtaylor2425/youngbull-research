@@ -6,6 +6,8 @@ from datetime import date
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import desc, func, select
+from sqlalchemy import text
+from app.db import engine
 
 from app.db import init_db, session_scope
 from app.models import StockResponse
@@ -27,7 +29,28 @@ app.add_middleware(
 @app.on_event("startup")
 def startup() -> None:
     init_db()
+@app.get("/db-check")
+def db_check() -> dict:
+    with engine.connect() as connection:
+        database_name = connection.execute(
+            text("SELECT current_database()")
+        ).scalar()
 
+        database_user = connection.execute(
+            text("SELECT current_user")
+        ).scalar()
+
+        database_version = connection.execute(
+            text("SELECT version()")
+        ).scalar()
+
+    return {
+        "dialect": engine.dialect.name,
+        "driver": engine.dialect.driver,
+        "database": database_name,
+        "user": database_user,
+        "version": database_version,
+    }
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "version": "2.0.0"}
