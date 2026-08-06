@@ -1,0 +1,114 @@
+.universe-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--line);
+}
+.universe-summary-strip > div {
+  padding: 22px;
+  border-right: 1px solid var(--line);
+}
+.universe-summary-strip > div:first-child {
+  border-left: 1px solid var(--line);
+}
+.universe-summary-strip span,
+.universe-result-count span {
+  display: block;
+  color: var(--muted);
+  font: 9px "Courier New", monospace;
+  letter-spacing: 0.12em;
+}
+.universe-summary-strip strong {
+  display: block;
+  margin-top: 8px;
+  font: 700 18px "Courier New", monospace;
+}
+.universe-alert {
+  margin-bottom: 18px;
+  padding: 17px 19px;
+  border: 1px solid var(--line);
+  background: rgba(20, 20, 19, 0.94);
+}
+.universe-alert strong {
+  font: 700 10px "Courier New", monospace;
+  letter-spacing: 0.1em;
+}
+.universe-alert p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.universe-alert.warning {
+  border-color: var(--line-gold);
+}
+.universe-alert.warning strong {
+  color: var(--gold);
+}
+.universe-alert.error {
+  border-color: rgba(227, 111, 111, 0.5);
+}
+.universe-alert.error strong {
+  color: var(--negative);
+}
+.universe-alert.success {
+  border-color: rgba(98, 201, 140, 0.42);
+}
+.universe-alert.success strong {
+  color: var(--positive);
+}
+.universe-controls {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(210px, 320px) 95px;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.universe-controls input,
+.universe-controls select {
+  min-width: 0;
+  padding: 14px 15px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+}
+.universe-result-count {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.universe-result-count strong {
+  margin-top: 4px;
+  font: 700 16px "Courier New", monospace;
+}
+.universe-live-table {
+  min-width: 1120px;
+}
+.universe-live-table th button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.universe-live-table th button:hover {
+  color: var(--gold);
+}
+@media (max-width: 720px) {
+  .universe-summary-strip {
+    grid-template-columns: 1fr;
+  }
+  .universe-summary-strip > div {
+    border-left: 1px solid var(--line);
+  }
+  .universe-controls {
+    grid-template-columns: 1fr;
+  }
+  .universe-result-count {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
