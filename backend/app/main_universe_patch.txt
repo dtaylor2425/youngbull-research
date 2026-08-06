@@ -1,0 +1,9 @@
+In backend/app/main.py, replace:
+
+@app.get("/api/universe")
+def universe_scores(limit: int = Query(100, ge=1, le=500)) -> dict:
+
+with:
+
+@app.get("/api/universe")
+def universe_scores(limit: int = Query(500, ge=1, le=500)) -> dict:
