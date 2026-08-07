@@ -24,6 +24,10 @@ export function SiteHeader() {
               <strong>Research</strong>
               <span>Young Bull articles and deep dives</span>
             </Link>
+            <Link href="/macro">
+            <strong>Macro</strong>
+            <span>Rates, liquidity, credit and macro levels</span>
+            </Link>
           </div>
         </details>
 
