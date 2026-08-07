@@ -14,6 +14,19 @@ export default function AboutPage() {
         <article><span>02</span><h2>Connect research to positions</h2><p>Every portfolio holding should have a live thesis, identifiable risks and a clear reason it still deserves capital.</p></article>
         <article><span>03</span><h2>Let the work compound</h2><p>Articles become a searchable database instead of disappearing into a chronological feed.</p></article>
       </section>
+      <section className="container page-section">
+  <article className="panel">
+    <span className="eyebrow">QUESTIONS / TICKER REQUESTS</span>
+    <h2 className="panel-title">Help improve the terminal</h2>
+    <p className="description">
+      Questions about the site, data or scoring methodology? Want a ticker
+      added to the ranked universe? Message Macro Engine on Substack.
+    </p>
+    <a className="text-link" href="https://macroengine.substack.com" target="_blank" rel="noreferrer">
+      MESSAGE MACRO ENGINE ON SUBSTACK →
+    </a>
+  </article>
+</section>
     </main>
   );
 }

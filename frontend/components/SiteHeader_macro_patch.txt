@@ -1,0 +1,11 @@
+Inside the existing Intelligence dropdown, add this link above AI News:
+
+<Link href="/macro">
+  <strong>Macro</strong>
+  <span>Rates, liquidity, credit and macro levels</span>
+</Link>
+
+The Intelligence dropdown should contain:
+Macro
+AI News
+Research

@@ -1,0 +1,23 @@
+.macro-hero { background: radial-gradient(circle at 82% 18%, rgba(216,166,63,.11), transparent 34%); }
+.macro-cta-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+.macro-primary-cta,.macro-secondary-cta { padding:13px 16px; border:1px solid var(--line-gold); font:700 9px "Courier New",monospace; letter-spacing:.09em; }
+.macro-primary-cta { background:var(--gold); color:#111; }
+.macro-secondary-cta { color:var(--gold); }
+.macro-level-grid { display:grid; grid-template-columns:repeat(4,1fr); border-bottom:1px solid var(--line); }
+.macro-level-grid article { padding:21px; border-right:1px solid var(--line); }
+.macro-level-grid article:nth-child(4n+1) { border-left:1px solid var(--line); }
+.macro-level-grid span,.macro-level-grid small { display:block; color:var(--muted); font:9px "Courier New",monospace; letter-spacing:.1em; }
+.macro-level-grid strong { display:block; margin:9px 0 6px; font:700 19px "Courier New",monospace; }
+.macro-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; padding-top:44px; }
+.macro-panel-heading { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; }
+.macro-panel-heading h2 { margin:9px 0 6px; font:700 28px "Courier New",monospace; text-transform:uppercase; }
+.macro-panel-heading p { margin:0; color:var(--muted); font-size:11px; }
+.macro-panel-heading>strong { color:var(--gold); font:700 20px "Courier New",monospace; white-space:nowrap; }
+.macro-chart-shell { margin-top:20px; }
+.macro-chart-controls { display:flex; gap:6px; margin-bottom:10px; }
+.macro-chart-controls button { padding:7px 9px; border:1px solid var(--line); background:var(--surface); color:var(--muted); font:700 8px "Courier New",monospace; cursor:pointer; }
+.macro-chart-controls button.active { background:var(--gold); border-color:var(--gold); color:#111; }
+.macro-chart { height:290px; }
+.macro-source { padding-top:28px; padding-bottom:70px; color:var(--muted); font-size:10px; }
+@media(max-width:900px){ .macro-level-grid{grid-template-columns:repeat(2,1fr)} .macro-grid{grid-template-columns:1fr} }
+@media(max-width:520px){ .macro-level-grid{grid-template-columns:1fr 1fr} .macro-level-grid article{padding:15px} .macro-panel-heading{flex-direction:column} .macro-chart{height:250px} }
