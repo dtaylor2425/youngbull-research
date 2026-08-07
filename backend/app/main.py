@@ -6,7 +6,7 @@ from datetime import date
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import desc, func, select
-
+from app.services.fred import FredError, get_macro_dashboard
 from app.db import init_db, session_scope
 from app.models import StockResponse
 from app.services.alpha_vantage import AlphaVantageError, build_premium_workbook
@@ -29,7 +29,12 @@ app.add_middleware(
 @app.on_event("startup")
 def startup() -> None:
     init_db()
-
+@app.get("/api/macro")
+def macro_dashboard() -> dict:
+    try:
+        return get_macro_dashboard()
+    except FredError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "version": "2.0.0"}
