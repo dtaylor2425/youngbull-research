@@ -1,24 +1,31 @@
 from __future__ import annotations
 
 import os
-from datetime import date
 
+import yfinance as yf
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import desc, func, select
-from app.services.fred import FredError, get_macro_dashboard
-from app.db import init_db, session_scope
+from sqlalchemy import desc, func, select, text
+
+from app.db import engine, init_db, session_scope
 from app.models import StockResponse
 from app.services.alpha_vantage import AlphaVantageError, build_premium_workbook
+from app.services.fred import FredError, get_macro_dashboard
 from app.services.market_data import MarketDataError, get_stock
-from app.tables import StockScore
-from app.portfolio_data import PORTFOLIO_AS_OF, PORTFOLIO_HOLDINGS
-import yfinance as yf
 from app.services.portfolio import get_live_portfolio
+from app.tables import StockScore
 
-app = FastAPI(title="Young Bull Market API", version="2.0.0")
+app = FastAPI(title="Young Bull Market API", version="3.0.0")
 
-origins = [x.strip() for x in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",") if x.strip()]
+origins = [
+    value.strip()
+    for value in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:3000",
+    ).split(",")
+    if value.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -27,18 +34,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 def startup() -> None:
     init_db()
-@app.get("/api/macro")
-def macro_dashboard() -> dict:
-    try:
-        return get_macro_dashboard()
-    except FredError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "version": "2.0.0"}
+    return {"status": "ok", "version": "3.0.0"}
+
+
+@app.get("/db-check")
+def db_check() -> dict:
+    result = {
+        "dialect": engine.dialect.name,
+        "driver": engine.dialect.driver,
+    }
+
+    if engine.dialect.name == "postgresql":
+        with engine.connect() as connection:
+            result["database"] = connection.execute(
+                text("SELECT current_database()")
+            ).scalar()
+            result["user"] = connection.execute(
+                text("SELECT current_user")
+            ).scalar()
+            result["version"] = connection.execute(
+                text("SELECT version()")
+            ).scalar()
+    else:
+        result["warning"] = "Backend is not connected to PostgreSQL."
+
+    return result
+
 
 @app.get("/api/stocks/{ticker}", response_model=StockResponse)
 def stock_detail(ticker: str) -> StockResponse:
@@ -47,20 +76,29 @@ def stock_detail(ticker: str) -> StockResponse:
     except MarketDataError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
+
 @app.get("/api/universe")
-def universe_scores(limit: int = Query(100, ge=1, le=500)) -> dict:
+def universe_scores(limit: int = Query(500, ge=1, le=500)) -> dict:
     with session_scope() as session:
         latest = session.scalar(select(func.max(StockScore.as_of)))
+
         if latest is None:
-            return {"as_of": None, "stocks": [], "message": "Run the scoring refresh job first."}
+            return {
+                "as_of": None,
+                "stocks": [],
+                "message": "Run the scoring refresh job first.",
+            }
+
         rows = session.scalars(
             select(StockScore)
             .where(StockScore.as_of == latest)
             .order_by(desc(StockScore.overall_score))
             .limit(limit)
         ).all()
+
         return {
             "as_of": latest.isoformat(),
+            "stored_count": len(rows),
             "stocks": [
                 {
                     "ticker": row.ticker,
@@ -79,6 +117,7 @@ def universe_scores(limit: int = Query(100, ge=1, le=500)) -> dict:
             ],
         }
 
+
 @app.get("/api/stocks/{ticker}/score")
 def ticker_score(ticker: str) -> dict:
     with session_scope() as session:
@@ -88,8 +127,13 @@ def ticker_score(ticker: str) -> dict:
             .order_by(desc(StockScore.as_of))
             .limit(1)
         )
+
         if not row:
-            raise HTTPException(status_code=404, detail="No stored score. Run refresh_scores first.")
+            raise HTTPException(
+                status_code=404,
+                detail="Ticker is not currently in the scored universe.",
+            )
+
         return {
             "ticker": row.ticker,
             "company": row.company,
@@ -103,6 +147,7 @@ def ticker_score(ticker: str) -> dict:
             "raw_metrics": row.raw_metrics,
         }
 
+
 @app.get("/api/stocks/{ticker}/premium")
 def premium_workbook(ticker: str, refresh: bool = False) -> dict:
     try:
@@ -115,15 +160,52 @@ def premium_workbook(ticker: str, refresh: bool = False) -> dict:
 def portfolio_snapshot() -> dict:
     return get_live_portfolio()
 
+
 @app.get("/api/stocks/{ticker}/comparison")
-def stock_comparison(ticker:str,period:str="2y") -> dict:
-    symbols=[ticker.upper(),"SPY","SMH"]
-    frame=yf.download(symbols,period=period,interval="1d",auto_adjust=True,progress=False,group_by="ticker")
-    output={}
+def stock_comparison(ticker: str, period: str = "2y") -> dict:
+    symbols = [ticker.upper(), "SPY", "SMH"]
+
+    frame = yf.download(
+        symbols,
+        period=period,
+        interval="1d",
+        auto_adjust=True,
+        progress=False,
+        group_by="ticker",
+        threads=True,
+    )
+
+    output = {}
+
     for symbol in symbols:
-        try: series=frame[symbol]["Close"].dropna()
-        except Exception: series=frame["Close"][symbol].dropna()
-        if series.empty: output[symbol]=[]; continue
-        base_value=float(series.iloc[0])
-        output[symbol]=[{"date":i.strftime("%Y-%m-%d"),"value":round(float(v/base_value*100),2)} for i,v in series.items()]
-    return {"ticker":ticker.upper(),"series":output}
+        try:
+            series = frame[symbol]["Close"].dropna()
+        except Exception:
+            try:
+                series = frame["Close"][symbol].dropna()
+            except Exception:
+                output[symbol] = []
+                continue
+
+        if series.empty:
+            output[symbol] = []
+            continue
+
+        base_value = float(series.iloc[0])
+        output[symbol] = [
+            {
+                "date": index.strftime("%Y-%m-%d"),
+                "value": round(float(value / base_value * 100.0), 2),
+            }
+            for index, value in series.items()
+        ]
+
+    return {"ticker": ticker.upper(), "series": output}
+
+
+@app.get("/api/macro")
+def macro_dashboard() -> dict:
+    try:
+        return get_macro_dashboard()
+    except FredError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
