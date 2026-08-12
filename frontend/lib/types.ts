@@ -44,6 +44,43 @@ export type PremiumWorkbook = {
   errors: Record<string, string>;
 };
 
-export type PortfolioHolding={ticker:string;day_gain:number;day_gain_pct:number;total_gain:number;total_gain_pct:number;last_price:number;average_cost:number;weight:number;acquired:string;total_cost:number;shares:number;market_value:number};
-export type PortfolioSnapshot={as_of:string;summary:{holdings:number;total_cost:number;market_value:number;total_gain:number;total_return_pct:number;day_gain:number;invested_weight_pct:number};holdings:PortfolioHolding[]};
+export type PortfolioHolding = {
+  ticker: string;
+  acquired: string;
+  weight: number | null;
+  day_gain_pct: number | null;
+  total_gain_pct: number | null;
+  data_status: "live" | "unavailable";
+};
+
+export type PortfolioSnapshot = {
+  as_of: string;
+
+  summary: {
+    holdings: number;
+
+    priced_holdings: number;
+    day_priced_holdings: number;
+
+    coverage_pct: number;
+    day_coverage_pct: number;
+
+    day_return_pct: number | null;
+    total_return_pct: number | null;
+
+    winning_positions: number;
+
+    best_position: {
+      ticker: string;
+      return_pct: number;
+    } | null;
+
+    worst_position: {
+      ticker: string;
+      return_pct: number;
+    } | null;
+  };
+
+  holdings: PortfolioHolding[];
+};
 export type ComparisonResponse={ticker:string;series:Record<string,{date:string;value:number}[]>};
