@@ -1,10 +1,117 @@
 "use client";
+
 import Link from "next/link";
-import {useMemo,useState} from "react";
-import type {PortfolioHolding} from "@/lib/types";
-type SortKey="weight"|"total_gain_pct"|"market_value";
-const money=(v:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(v);
-export function PortfolioTable({holdings,compact=false}:{holdings:PortfolioHolding[];compact?:boolean}){
- const [sortKey,setSortKey]=useState<SortKey>("weight"); const sorted=useMemo(()=>[...holdings].sort((a,b)=>b[sortKey]-a[sortKey]),[holdings,sortKey]); const visible=compact?sorted.slice(0,10):sorted;
- return <div>{!compact&&<div className="portfolio-sort"><span>SORT BY</span>{(["weight","total_gain_pct","market_value"] as SortKey[]).map(k=><button key={k} className={sortKey===k?"active":""} onClick={()=>setSortKey(k)}>{k==="weight"?"Weight":k==="total_gain_pct"?"Return":"Value"}</button>)}</div>}<div className="portfolio-table-wrap"><table className="portfolio-table"><thead><tr><th>Position</th><th>Weight</th><th>Value</th><th>Avg. cost</th><th>Total gain</th><th>Return</th><th></th></tr></thead><tbody>{visible.map(h=><tr key={h.ticker}><td><strong>{h.ticker}</strong><small>Since {h.acquired}</small></td><td>{h.weight.toFixed(2)}%</td><td>{money(h.market_value)}</td><td>${h.average_cost.toFixed(2)}</td><td className={h.total_gain>=0?"positive":"negative"}>{money(h.total_gain)}</td><td className={h.total_gain_pct>=0?"positive":"negative"}>{h.total_gain_pct>0?"+":""}{h.total_gain_pct.toFixed(2)}%</td><td><Link href={`/stocks/${h.ticker}`}>Workbook →</Link></td></tr>)}</tbody></table></div></div>
+import { useMemo, useState } from "react";
+import type { PortfolioHolding } from "@/lib/types";
+
+type SortKey = "weight" | "total_gain_pct" | "day_gain_pct";
+
+function formatPct(value: number | null) {
+  if (value == null) return "N/A";
+  return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
+}
+
+export function PortfolioTable({
+  holdings,
+  compact = false,
+}: {
+  holdings: PortfolioHolding[];
+  compact?: boolean;
+}) {
+  const [sortKey, setSortKey] = useState<SortKey>("weight");
+
+  const sorted = useMemo(() => {
+    return [...holdings].sort((a, b) => {
+      const aValue = a[sortKey];
+      const bValue = b[sortKey];
+
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+
+      return bValue - aValue;
+    });
+  }, [holdings, sortKey]);
+
+  const visible = compact ? sorted.slice(0, 10) : sorted;
+
+  return (
+    <div>
+      {!compact && (
+        <div className="portfolio-sort">
+          <span>SORT BY</span>
+          <button onClick={() => setSortKey("weight")}>
+            Weight
+          </button>
+          <button onClick={() => setSortKey("total_gain_pct")}>
+            Total return
+          </button>
+          <button onClick={() => setSortKey("day_gain_pct")}>
+            Day
+          </button>
+        </div>
+      )}
+
+      <div className="portfolio-table-wrap">
+        <table className="portfolio-table">
+          <thead>
+            <tr>
+              <th>Position</th>
+              <th>Weight</th>
+              <th>Day</th>
+              <th>Total return</th>
+              <th>Acquired</th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {visible.map((holding) => (
+              <tr key={holding.ticker}>
+                <td>
+                  <strong>{holding.ticker}</strong>
+                  <small>
+                    {holding.data_status === "live"
+                      ? "Latest available data"
+                      : "Price unavailable"}
+                  </small>
+                </td>
+                <td>
+                  {holding.weight != null
+                    ? `${holding.weight.toFixed(2)}%`
+                    : "N/A"}
+                </td>
+                <td
+                  className={
+                    (holding.day_gain_pct ?? 0) >= 0
+                      ? "positive"
+                      : "negative"
+                  }
+                >
+                  {formatPct(holding.day_gain_pct)}
+                </td>
+                <td
+                  className={
+                    (holding.total_gain_pct ?? 0) >= 0
+                      ? "positive"
+                      : "negative"
+                  }
+                >
+                  <strong>
+                    {formatPct(holding.total_gain_pct)}
+                  </strong>
+                </td>
+                <td>{holding.acquired}</td>
+                <td>
+                  <Link href={`/stocks/${holding.ticker}`}>
+                    Workbook →
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }

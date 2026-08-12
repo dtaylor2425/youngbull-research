@@ -4,6 +4,7 @@ import type {
   PremiumWorkbook,
   StockResponse,
   StoredScore,
+  UniverseResponse,
 } from "./types";
 
 const API_URL = (
@@ -15,7 +16,9 @@ const API_URL = (
 async function request<T>(path: string): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     cache: "no-store",
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+    },
   });
 
   if (!response.ok) {
@@ -32,7 +35,9 @@ export function getStock(ticker: string) {
   );
 }
 
-export async function getScore(ticker: string): Promise<StoredScore | null> {
+export async function getScore(
+  ticker: string
+): Promise<StoredScore | null> {
   try {
     return await request<StoredScore>(
       `/api/stocks/${encodeURIComponent(ticker.toUpperCase())}/score`
@@ -54,24 +59,8 @@ export async function getPremiumWorkbook(
   }
 }
 
-export async function getUniverseScores(limit = 500) {
-  return request<{
-    as_of: string | null;
-    stocks: {
-      ticker: string;
-      company: string;
-      theme: string;
-      price: number | null;
-      market_cap: number | null;
-      momentum: number;
-      technicals: number;
-      fundamentals: number;
-      thematic_fit: number;
-      overall: number;
-      raw_metrics: Record<string, number | null>;
-    }[];
-    message?: string;
-  }>(`/api/universe?limit=${limit}`);
+export function getUniverseScores(limit = 500) {
+  return request<UniverseResponse>(`/api/universe?limit=${limit}`);
 }
 
 export function getPortfolio() {
