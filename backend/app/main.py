@@ -14,6 +14,7 @@ from app.services.market_data import MarketDataError, get_stock
 from app.tables import StockScore
 from app.portfolio_data import PORTFOLIO_AS_OF, PORTFOLIO_HOLDINGS
 import yfinance as yf
+from app.services.portfolio import get_live_portfolio
 
 app = FastAPI(title="Young Bull Market API", version="2.0.0")
 
@@ -112,9 +113,7 @@ def premium_workbook(ticker: str, refresh: bool = False) -> dict:
 
 @app.get("/api/portfolio")
 def portfolio_snapshot() -> dict:
-    total_cost=sum(x["total_cost"] for x in PORTFOLIO_HOLDINGS)
-    total_gain=sum(x["total_gain"] for x in PORTFOLIO_HOLDINGS)
-    return {"as_of":PORTFOLIO_AS_OF,"summary":{"holdings":len(PORTFOLIO_HOLDINGS),"total_cost":round(total_cost,2),"market_value":round(total_cost+total_gain,2),"total_gain":round(total_gain,2),"total_return_pct":round(total_gain/total_cost*100,2),"day_gain":round(sum(x["day_gain"] for x in PORTFOLIO_HOLDINGS),2),"invested_weight_pct":round(sum(x["weight"] for x in PORTFOLIO_HOLDINGS),2)},"holdings":PORTFOLIO_HOLDINGS}
+    return get_live_portfolio()
 
 @app.get("/api/stocks/{ticker}/comparison")
 def stock_comparison(ticker:str,period:str="2y") -> dict:
