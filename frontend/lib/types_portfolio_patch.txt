@@ -1,0 +1,27 @@
+Replace the current PortfolioHolding and PortfolioSnapshot definitions with:
+
+export type PortfolioHolding = {
+  ticker: string;
+  acquired: string;
+  weight: number | null;
+  day_gain_pct: number | null;
+  total_gain_pct: number | null;
+  data_status: "live" | "unavailable";
+};
+
+export type PortfolioSnapshot = {
+  as_of: string;
+  summary: {
+    holdings: number;
+    priced_holdings: number;
+    day_priced_holdings: number;
+    coverage_pct: number;
+    day_coverage_pct: number;
+    day_return_pct: number | null;
+    total_return_pct: number | null;
+    winning_positions: number;
+    best_position: { ticker: string; return_pct: number } | null;
+    worst_position: { ticker: string; return_pct: number } | null;
+  };
+  holdings: PortfolioHolding[];
+};
